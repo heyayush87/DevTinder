@@ -5,10 +5,10 @@ const User = require("./models/users")
 
 app.post("/signup", async (req, res) => {
     const user = new User({
-        firstname: "Ayush",
-        lastname: "Kumar",
-        emailId: "heyayush0709@gmail.com",
-        password:"heyayush",
+        firstname: "Vaibhav",
+        lastname: "chuttani",
+        emailId: "vaibhav0709@gmail.com",
+        password:"heyvaibhav",
         age: 23,
     });
     await user.save();
