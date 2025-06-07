@@ -11,11 +11,14 @@ app.post("/signup", async (req, res) => {
     const user = new User(req.body);
     await user.save();
     res.status(201).send("User created successfully");
-  } catch (error) {
-    
-    res.status(500).send("Something went wrong while creating the user");
+  } catch (err) {
+
+    res
+      .status(400)
+      .send("Something went wrong while creating the user" + err.message);
   }
 });
+
   
 // get any user data
 app.get("/user", async (req, res) => {
@@ -65,19 +68,38 @@ app.delete("/user", async (req, res) => {
 });
   
 // update data using patch
-app.patch("/user", async (req, res) => {
-    const userId = req.body.userId;
-    const data = req.body;
-    try {
-      await User.findByIdAndUpdate({ _id: userId }, data, {
-          runValidators:true,
-        })
-        res.send("user data updated successfully");
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
+  const data = req.body;
+
+  try {
+    const ALLOWED_UPDATES = ["photo", "about", "gender", "age", "Skills"];
+
+    // ✅ Corrected .every() check with return
+    const isUpdatedAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+
+    if (!isUpdatedAllowed) {
+      return res.status(400).send("Error: update not allowed");
     }
-    catch (err) {
-        res.status(500).send("Something went wrong");
+
+    // ✅ Check if Skills exists and is too long
+    if (data.Skills && data.Skills.length > 10) {
+      return res.status(400).send("Error: Skills should not be more than 10");
     }
-})
+
+    await User.findByIdAndUpdate({ _id: userId }, data, {
+      runValidators: true,
+    });
+
+    res.send("User data updated successfully");
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
+  }
+});
+
+
 connectDB()
   .then(() => {
       console.log("databse connected");
