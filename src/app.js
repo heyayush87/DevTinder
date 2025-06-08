@@ -1,14 +1,22 @@
 const express = require("express")
 const connectDB=require("./Config/database");
-const app = express()
+const app = express();
 const User = require("./models/users")
-
+const {validateSignUpData} = require("./utils/validationn");
+const bcrypt=require("bcrypt")
 app.use(express.json());
 
 // add data to database 
 app.post("/signup", async (req, res) => {
   try {
-    const user = new User(req.body);
+    validateSignUpData(req);
+    const { firstname , lastname , emailId ,password } = req.body;
+    const passwordhash = await bcrypt.hash(password, 10);
+    console.log(passwordhash);
+    
+    const user = new User({
+      firstname,lastname,emailId,password:passwordhash
+    });
     await user.save();
     res.status(201).send("User created successfully");
   } catch (err) {
@@ -19,7 +27,28 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-  
+// Login Api
+app.post("/login", async (req, res) => {
+  try {
+    const {emailId,password}=req.body
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+    
+    const isPassword = await bcrypt.compare(password, user.password)
+    if (isPassword) {
+      res.send("Login Successful")
+    }
+    else{
+      throw new Error("Invalid Credentials");
+    }
+  } catch (err) {
+    res
+      .status(400)
+      .send("Error : " + err.message);
+  }
+  }) 
 // get any user data
 app.get("/user", async (req, res) => {
     const useremail = req.body.emailId;
@@ -33,7 +62,7 @@ app.get("/user", async (req, res) => {
         }
     }
     catch(err) {
-        res.status(400).send("something went wrong");
+        res.status(400).send("something went wrong"+err.message);
     }
 })
 
@@ -43,8 +72,8 @@ app.get("/feed", async (req, res) => {
     const users = await User.find({});
     res.send(users);
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).send("Something went wrong");
+   
+    res.status(500).send("Something went wrong"+error.message);
   }
 });
   
@@ -63,7 +92,7 @@ app.delete("/user", async (req, res) => {
     res.send("User deleted successfully");
   } catch (err) {
    
-    res.status(500).send("Something went wrong");
+    res.status(500).send("Something went wrong"+err.message);
   }
 });
   
@@ -75,7 +104,7 @@ app.patch("/user/:userId", async (req, res) => {
   try {
     const ALLOWED_UPDATES = ["photo", "about", "gender", "age", "Skills"];
 
-    // ✅ Corrected .every() check with return
+   
     const isUpdatedAllowed = Object.keys(data).every((k) =>
       ALLOWED_UPDATES.includes(k)
     );
@@ -84,7 +113,7 @@ app.patch("/user/:userId", async (req, res) => {
       return res.status(400).send("Error: update not allowed");
     }
 
-    // ✅ Check if Skills exists and is too long
+   
     if (data.Skills && data.Skills.length > 10) {
       return res.status(400).send("Error: Skills should not be more than 10");
     }
@@ -108,7 +137,7 @@ connectDB()
       });
   })
   .catch((err) => {
-    console.lerror("databse doesnt connected");
+    console.error("databse doesn't connected");
   });
  
 
