@@ -77,6 +77,7 @@ userschema.methods.getJWT = async function () {
   return token;
 }
 
+
 userschema.methods.validatePassword =async  function (passwordInputByUser) {
   const user = this;
    // bcrypt.compare() returns a promise that resolves to true or false
