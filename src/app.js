@@ -7,13 +7,13 @@ const cors = require("cors");
 
 const app = express();
 
-// ✅ Now safe to access env variables
+
+
 const allowedOrigins = (process.env.CLIENT_URLS || "")
   .split(",")
   .map((url) => url.trim())
   .filter(Boolean);
 
-// Enable CORS
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -26,6 +26,13 @@ app.use(
     credentials: true,
   })
 );
+
+// Allow credentials explicitly
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 
 // Middlewares
 const cookieparser = require("cookie-parser");
