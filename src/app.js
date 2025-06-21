@@ -5,9 +5,20 @@ const app = express();
 const cors= require("cors");
 
 
+const allowedOrigins = process.env.CLIENT_URLS.split(",").map((url) =>
+  url.trim()
+);
+
+// Enable CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_URLS.trim(),
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );

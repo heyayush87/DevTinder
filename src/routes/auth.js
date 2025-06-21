@@ -73,8 +73,12 @@ authRouter.post("/login", async (req, res) => {
       const token = await user.getJWT();
 
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
+
       const safeUser = {
         firstname: user.firstname,
         lastname: user.lastname,
