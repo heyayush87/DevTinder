@@ -6,7 +6,7 @@ const cors= require("cors");
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL, // Replace with your frontend URL
+    origin: process.env.CLIENT_URLS, // Replace with your frontend URL
     credentials: true,
   })
 );
@@ -37,7 +37,7 @@ connectDB()
   .then(() => {
       console.log("databse connected");
       app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+       console.log(`Server running on port ${PORT}`);
       });
   })
   .catch((err) => {
