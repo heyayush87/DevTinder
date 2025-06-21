@@ -7,7 +7,7 @@ const cors= require("cors");
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URLS, // Replace with your frontend URL
+    origin: process.env.CLIENT_URLS.trim(),
     credentials: true,
   })
 );
