@@ -1,13 +1,17 @@
-const express = require("express")
+
 require("dotenv").config();
-const connectDB=require("./Config/database");
+
+const express = require("express");
+const connectDB = require("./Config/database");
+const cors = require("cors");
+
 const app = express();
-const cors= require("cors");
 
-
-const allowedOrigins = process.env.CLIENT_URLS.split(",").map((url) =>
-  url.trim()
-);
+// ✅ Now safe to access env variables
+const allowedOrigins = (process.env.CLIENT_URLS || "")
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
 
 // Enable CORS
 app.use(
@@ -22,43 +26,31 @@ app.use(
     credentials: true,
   })
 );
-// Middleware to parse cookies
-const cookieparser = require("cookie-parser")
 
-// Middleware to parse JSON bodies
+// Middlewares
+const cookieparser = require("cookie-parser");
 app.use(express.json());
+app.use(cookieparser());
 
-app.use(cookieparser())
-
-
-
-
+// Routes
 const authRouter = require("./routes/auth");
-const profileRouter = require("./routes/profile");  
+const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 
-
- app.use("/", authRouter);
-app.use("/", profileRouter); 
+app.use("/", authRouter);
+app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 
 const PORT = process.env.PORT || 3000;
 connectDB()
   .then(() => {
-      console.log("databse connected");
-      app.listen(PORT, () => {
-       console.log(`Server running on port ${PORT}`);
-      });
+    console.log("databse connected");
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("databse doesn't connected");
   });
- 
-
-  
-
-
-
-
