@@ -1,17 +1,18 @@
 const express = require("express");
-const requestRouter = express.Router();
+const profileRouter = express.Router(); // ✅ name should match
+
 const { userauth } = require("../middleware/auth");
 const { ValidateEditProfileData } = require("../utils/validationn");
 
-requestRouter.get("/profile/view", userauth, async (req, res) => {
+profileRouter.get("/profile/view", userauth, async (req, res) => {
   try {
-    const user = req.user;
-    res.send(user);
+    res.send(req.user);
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
 });
-requestRouter.patch("/profile/edit", userauth, async (req, res) => {
+
+profileRouter.patch("/profile/edit", userauth, async (req, res) => {
   try {
     if (!ValidateEditProfileData(req)) {
       throw new Error("Invalid fields for edit");
@@ -20,19 +21,14 @@ requestRouter.patch("/profile/edit", userauth, async (req, res) => {
     const loggedinUser = req.user;
 
     Object.keys(req.body).forEach((key) => {
-      loggedinUser.set(key, req.body[key]); // ✅ Use set to apply schema setters
+      loggedinUser.set(key, req.body[key]);
     });
 
     await loggedinUser.save();
-
     res.send(loggedinUser);
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
 });
 
-
-
-
-
-module.exports = requestRouter;
+module.exports = profileRouter; // ✅ This will now work
