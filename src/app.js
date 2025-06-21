@@ -7,48 +7,56 @@ const cookieparser = require("cookie-parser");
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URLS || "")
-  .split(",")
-  .map((url) => url.trim())
-  .filter(Boolean);
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    const originHost = origin.replace(/^https?:\/\//, "").split("/")[0];
-    const isAllowed = allowedOrigins.some((allowed) => {
-      const allowedHost = allowed.replace(/^https?:\/\//, "").split("/")[0];
-      return originHost === allowedHost;
-    });
+app.use(
+  cors({
+    origin: "https://dev-tinder-frontend-mu.vercel.app/",
+    credentials: true,
+  })
+);
 
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.error(`CORS blocked for origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  exposedHeaders: ["Set-Cookie"],
-};
+// const allowedOrigins = (process.env.CLIENT_URLS || "")
+//   .split(",")
+//   .map((url) => url.trim())
+//   .filter(Boolean);
 
-// ✅ Apply CORS to all routes
-app.use(cors(corsOptions));
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin) return callback(null, true);
+//     const originHost = origin.replace(/^https?:\/\//, "").split("/")[0];
+//     const isAllowed = allowedOrigins.some((allowed) => {
+//       const allowedHost = allowed.replace(/^https?:\/\//, "").split("/")[0];
+//       return originHost === allowedHost;
+//     });
 
-// ✅ This is optional and generally not needed if above is correct
-// app.options("/*", cors(corsOptions));
+//     if (isAllowed) {
+//       callback(null, true);
+//     } else {
+//       console.error(`CORS blocked for origin: ${origin}`);
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true,
+//   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+//   exposedHeaders: ["Set-Cookie"],
+// };
 
-// ✅ Custom CORS headers (optional)
-app.use((req, res, next) => {
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
+// // ✅ Apply CORS to all routes
+// app.use(cors(corsOptions));
+
+// // ✅ This is optional and generally not needed if above is correct
+// // app.options("/*", cors(corsOptions));
+
+// // ✅ Custom CORS headers (optional)
+// app.use((req, res, next) => {
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+//   );
+//   res.header("Access-Control-Allow-Credentials", "true");
+//   next();
+// });
 
 app.use(express.json());
 app.use(cookieparser());
