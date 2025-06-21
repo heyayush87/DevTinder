@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const connectionRequestSchema = new mongoose.Schema(
   {
@@ -14,28 +14,21 @@ const connectionRequestSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      required: true,
       enum: ["ignore", "interested", "accepted", "rejected"],
-      message:
-        "Status must be one of 'ignore', 'interested', 'accepted', or 'rejected'",
+      required: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
+
+// Prevent sending a request to self
+connectionRequestSchema.pre("save", function (next) {
+  if (this.fromUserId.equals(this.toUserId)) {
+    return next(new Error("Cannot send a connection request to yourself."));
+  }
+  next();
+});
 
 connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 
-
-// create pre-save hook to validate the fromUserId and toUserId
-connectionRequestSchema.pre("save", async function (next) {
-   const connectionRequest = this;
-   if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
-        throw new Error("Cannont send a connection request to yourself");
-    }
-    next();
-})
-
-const ConnectionRequest = mongoose.model("ConnectionRequest", connectionRequestSchema)
-module.exports = ConnectionRequest
+module.exports = mongoose.model("ConnectionRequest", connectionRequestSchema);

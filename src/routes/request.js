@@ -2,10 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const { userauth } = require("../middleware/auth");
 const ConnectionRequest = require("../models/connectionRequest");
-const User=require("../models/users");
+const User = require("../models/users");
 
-const requestRouter = express.Router()
-// Make Api for sending connection request
+const requestRouter = express.Router();
+
+//  SEND CONNECTION REQUEST
 requestRouter.post(
   "/request/send/:status/:touserId",
   userauth,
@@ -15,46 +16,49 @@ requestRouter.post(
       const toUserId = req.params.touserId;
       const status = req.params.status;
 
-      // Validate user
-      const user = await User.findById(toUserId);
-      if (!user) {
-        return res.status(404).send("User not found");
+      //  Prevent sending request to yourself
+      if (fromUserId.toString() === toUserId.toString()) {
+        return res.status(400).send("You cannot send a request to yourself.");
       }
 
-      // Validate status
+      //  Check if target user exists
+      const user = await User.findById(toUserId);
+      if (!user) {
+        return res.status(404).send("Target user not found.");
+      }
+
+      //  Validate request status
       const validStatuses = ["ignore", "interested"];
       if (!validStatuses.includes(status)) {
         return res
           .status(400)
-          .send("Invalid status. Must be one of 'ignore', 'interested'");
+          .send("Invalid status. Must be 'ignore' or 'interested'.");
       }
 
-     
-      // Check for existing active connection request
+      //  Check for existing connection request (any status)
       const existingRequest = await ConnectionRequest.findOne({
         fromUserId,
         toUserId,
-        status: { $in: ["interested", "pending"] }, // Optional: Add your own valid statuses
       });
 
       if (existingRequest) {
         return res
           .status(400)
-          .send("You have already sent a connection request to this user.");
+          .send("You have already sent a request to this user.");
       }
 
-      // Save new request
+      //  Create and save new connection request
       const newRequest = new ConnectionRequest({
         fromUserId,
         toUserId,
         status,
       });
 
-      const connectionData = await newRequest.save();
+      const savedRequest = await newRequest.save();
 
-      res.status(201).send({
+      res.status(201).json({
         message: `${req.user.firstname} has ${status} ${user.firstname}.`,
-        connectionData,
+        connectionData: savedRequest,
       });
     } catch (err) {
       res.status(400).send("Error: " + err.message);
@@ -62,8 +66,7 @@ requestRouter.post(
   }
 );
 
-
-// Make Api for getting all connection requests
+//  REVIEW (ACCEPT/REJECT) CONNECTION REQUEST
 requestRouter.post(
   "/request/review/:status/:requestId",
   userauth,
@@ -72,14 +75,15 @@ requestRouter.post(
       const loggedInUser = req.user;
       const { status, requestId } = req.params;
 
-      const allowedStatus = ["accepted", "rejected"];
-      if (!allowedStatus.includes(status)) {
+      //  Validate status
+      const allowedStatuses = ["accepted", "rejected"];
+      if (!allowedStatuses.includes(status)) {
         return res
           .status(400)
-          .send("Invalid status. Must be one of 'accepted', 'rejected'");
+          .send("Invalid status. Use 'accepted' or 'rejected'.");
       }
 
-      // Find the connection request
+      //  Find connection request
       const connectionRequest = await ConnectionRequest.findOne({
         _id: requestId,
         toUserId: loggedInUser._id,
@@ -87,14 +91,15 @@ requestRouter.post(
       });
 
       if (!connectionRequest) {
-        return res.status(404).send("Connection request not found");
+        return res.status(404).send("Connection request not found.");
       }
 
+      //  Update status
       connectionRequest.status = status;
       const updatedRequest = await connectionRequest.save();
 
-      res.status(200).send({
-        message: `Request has been ${status} by ${loggedInUser.firstname}.`,
+      res.status(200).json({
+        message: `You have ${status} the request.`,
         updatedRequest,
       });
     } catch (err) {

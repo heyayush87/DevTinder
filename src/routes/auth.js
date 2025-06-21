@@ -7,10 +7,18 @@ const User = require("../models/users");
 const bcrypt = require("bcrypt");
 
 
+const jwt = require("jsonwebtoken");
+
 authRouter.post("/signup", async (req, res) => {
   try {
     validateSignUpData(req);
     const { firstname, lastname, emailId, password } = req.body;
+
+    const existingUser = await User.findOne({ emailId });
+    if (existingUser) {
+      return res.status(400).send("Email already exists");
+    }
+
     const passwordhash = await bcrypt.hash(password, 10);
 
     const user = new User({
@@ -19,14 +27,26 @@ authRouter.post("/signup", async (req, res) => {
       emailId,
       password: passwordhash,
     });
+
     await user.save();
-    res.status(201).send("User created successfully");
+
+    //  Create and set JWT token in cookie
+    const token = jwt.sign({ _id: user._id }, "@DevTinder09", {
+      expiresIn: "7d",
+    });
+
+    res
+      .cookie("token", token)
+      .status(201)
+      .send({ message: "User created", data: user }); // frontend expects `data`
   } catch (err) {
     res
       .status(400)
-      .send("Something went wrong while creating the user" + err.message);
+      .send("Something went wrong while creating the user: " + err.message);
   }
 });
+
+
 
 authRouter.post("/login", async (req, res) => {
   try {
@@ -54,7 +74,19 @@ authRouter.post("/login", async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       });
-      res.send(user);
+      const safeUser = {
+        firstname: user.firstname,
+        lastname: user.lastname,
+        emailId: user.emailId,
+        photo: user.photo,
+        age: user.age,
+        gender: user.gender,
+        about: user.about,
+        Skills: user.Skills,
+        _id: user._id, // include if needed on frontend
+      };
+
+      res.status(200).send({ data: safeUser });
     } else {
       throw new Error("Invalid Credentials");
     }

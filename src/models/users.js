@@ -10,7 +10,7 @@ const userschema = new mongoose.Schema(
       type: String,
       required: true,
       minLength: 3,
-      maxLength:50,
+      maxLength: 50,
     },
     lastname: {
       type: String,
@@ -42,16 +42,18 @@ const userschema = new mongoose.Schema(
     },
     gender: {
       type: String,
+      set: (val) => val?.toLowerCase(),
       validate(value) {
         if (!["male", "female", "others"].includes(value)) {
           throw new Error("Gender data is not valid");
         }
       },
     },
+
     photo: {
       type: String,
       default:
-        "https://www.shutterstock.com/shutterstock/photos/2534623311/display_1500/stock-vector-default-avatar-profile-icon-transparent-png-social-media-user-png-icon-whatsapp-dp-isolated-on-2534623311.jpg",
+        "https://tse3.mm.bing.net/th?id=OIP.c2pNCKarFMQqCgZG7L5YNwHaHa&pid=Api&P=0&h=180",
       validate(value) {
         if (!validator.isURL(value)) {
           throw new Error("URL is not valid" + value);

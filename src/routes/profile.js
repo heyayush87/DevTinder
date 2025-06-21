@@ -13,20 +13,25 @@ requestRouter.get("/profile/view", userauth, async (req, res) => {
 });
 requestRouter.patch("/profile/edit", userauth, async (req, res) => {
   try {
-      if (!ValidateEditProfileData(req)) {
-         throw new Error("Invalid fields for edit");
-      }
-      const loggedinUser = req.user;
-     Object.keys(req.body).forEach((key) => {
-        loggedinUser[key] = req.body[key];
-      });
-      await loggedinUser.save();
-      res.send("Profile updated successfully"); 
+    if (!ValidateEditProfileData(req)) {
+      throw new Error("Invalid fields for edit");
+    }
+
+    const loggedinUser = req.user;
+
+    Object.keys(req.body).forEach((key) => {
+      loggedinUser.set(key, req.body[key]); // ✅ Use set to apply schema setters
+    });
+
+    await loggedinUser.save();
+
+    res.send(loggedinUser);
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
-}
-)
+});
+
+
 
 
 

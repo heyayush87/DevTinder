@@ -5,32 +5,27 @@ const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/users");
 
 userRouter.get("/user/request/received", userauth, async (req, res) => {
-    try {
-        const loggedInUser = req.user;
-        const connectionRequestId = await ConnectionRequest.find({
-          toUserId: loggedInUser._id,
-          status: "interested",
-        })
-          .populate(
-            "fromUserId",
-            "firstname lastname photo age gender about Skills"
-          )
-         
-          
-        console.log("connectionRequestId", connectionRequestId);
+  try {
+    const loggedInUser = req.user;
+    const connectionRequestId = await ConnectionRequest.find({
+      toUserId: loggedInUser._id,
+      status: "interested",
+    }).populate(
+      "fromUserId",
+      "firstname lastname photo age gender about Skills"
+    );
 
-        if (connectionRequestId.length === 0) {
-            return res.status(404).send("No connection requests found");
-        }
-        res.json({
-            message: "Connection requests fetched successfully",
-           data: connectionRequestId
-        })
-    }
-    catch(err) {
-        res.status(400).send("Error: " + err.message);
-    }
-})
+    return res.status(200).json({
+      message:
+        connectionRequestId.length === 0
+          ? "No connection requests found"
+          : "Connection requests fetched successfully",
+      data: connectionRequestId,
+    });
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
+  }
+});
 
 // Make Api  for see current connection
 userRouter.get("/user/connection", userauth, async (req, res) => {
@@ -73,7 +68,7 @@ userRouter.get("/user/connection", userauth, async (req, res) => {
 userRouter.get("/user/feed", userauth, async (req, res) => {
   const page= parseInt(req.query.page) || 1;
   let limit = parseInt(req.query.limit) || 10; 
-  limit>50?50:limit
+  limit = limit > 50 ? 50 : limit;
 
   const skip = (page - 1) * limit;
   try {
@@ -88,7 +83,7 @@ userRouter.get("/user/feed", userauth, async (req, res) => {
       hideuserFromFeed.add(request.toUserId.toString());
       
     })
-    c
+    
 
     const feeddata = await User.find({
       $and: [
