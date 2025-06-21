@@ -1,11 +1,12 @@
 const express = require("express");
 
+
 const authRouter = express.Router();
 const { validateSignUpData } = require("../utils/validationn");
 
 const User = require("../models/users");
 const bcrypt = require("bcrypt");
-
+require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
 
@@ -31,7 +32,7 @@ authRouter.post("/signup", async (req, res) => {
     await user.save();
 
     //  Create and set JWT token in cookie
-    const token = jwt.sign({ _id: user._id }, "@DevTinder09", {
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
