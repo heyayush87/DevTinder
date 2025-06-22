@@ -80,4 +80,13 @@
 
 - Clean structure for scalability & maintenance
 
+## 📡 API Endpoints
+# 1️⃣ Authentication Routes
+ | Method | Endpoint       | Description                   | Auth Required |
+| ------ | -------------- | ----------------------------- | ------------- |
+| POST   | `/auth/signup` | Register a new user           | ❌             |
+| POST   | `/auth/login`  | Authenticate & issue JWT      | ❌             |
+| POST   | `/auth/logout` | Logout by clearing JWT cookie | ✅             |
+
+
 
