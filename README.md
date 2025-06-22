@@ -81,12 +81,31 @@
 - Clean structure for scalability & maintenance
 
 ## 📡 API Endpoints
-# 1️⃣ Authentication Routes
+1️⃣ Authentication Routes
  | Method | Endpoint       | Description                   | Auth Required |
 | ------ | -------------- | ----------------------------- | ------------- |
 | POST   | `/auth/signup` | Register a new user           | ❌             |
 | POST   | `/auth/login`  | Authenticate & issue JWT      | ❌             |
 | POST   | `/auth/logout` | Logout by clearing JWT cookie | ✅             |
 
+2️⃣ User Profile Routes
+| Method | Endpoint            | Description                   | Auth Required |
+| ------ | ------------------- | ----------------------------- | ------------- |
+| GET    | `/profile/view`     | Get logged-in user profile    | ✅             |
+| PATCH  | `/profile/edit`     | Update allowed profile fields | ✅             |
+| PATCH  | `/profile/password` | Update user password          | ✅             |
+
+3️⃣ Connection Request Routes
+| Method | Endpoint                             | Description                           | Auth Required |
+| ------ | ------------------------------------ | ------------------------------------- | ------------- |
+| POST   | `/request/send/:status/:toUserId`    | Send a request (Interested / Ignored) | ✅             |
+| POST   | `/request/review/:status/:requestId` | Accept or Reject a request            | ✅             |
+| GET    | `/user/requests/received`            | Fetch pending connection requests     | ✅             |
+| GET    | `/user/connections`                  | Get all accepted connections          | ✅             |
+
+4️⃣ Feed API & Pagination
+| Method | Endpoint                     | Description                            | Auth Required |
+| ------ | ---------------------------- | -------------------------------------- | ------------- |
+| GET    | `/user/feed?page=1&limit=10` | Suggested developers (with pagination) | ✅             |
 
 
