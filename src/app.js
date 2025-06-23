@@ -11,14 +11,23 @@ app.use((req, res, next) => {
 });
 
 // CORS Configuration
+const allowedOrigins = process.env.CLIENT_URLS?.split(",") || [];
+
 app.use(
   cors({
-    origin: "https://dev-tinder-frontend-mu.vercel.app",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
+
 
 app.use(express.json());
 app.use(cookieParser());
