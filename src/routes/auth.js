@@ -71,6 +71,9 @@ authRouter.post("/login", async (req, res) => {
     const isPassword = await user.validatePassword(password);
     if (isPassword) {
       const token = await user.getJWT();
+      if (!token) {
+        return res.status(401).send("Access Denied");
+      }
 
       res.cookie("token", token, {
         httpOnly: true,
@@ -104,8 +107,12 @@ authRouter.post("/logout", async (req, res) => {
   try {
     // clear the cookie
     res.cookie("token", "", {
-      expires: new Date(Date.now() ), // clear cookie
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      expires: new Date(0), // ✅ clear immediately
     });
+    
     
       res.send("Logout Successful");
   } catch (err) {
